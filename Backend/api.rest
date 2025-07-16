@@ -1,0 +1,10 @@
+GET http://localhost:8000/products
+
+###
+POST http://localhost:8000/products
+
+###
+PUT http://localhost:8000/products
+
+###
+DELETE http://localhost:8000/products/:id
