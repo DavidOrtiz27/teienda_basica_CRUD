@@ -18,7 +18,21 @@ export class ProductsModel {
     constructor(ObjProducts: ProductData | null = null) {
         this.objProducts = ObjProducts;
     }
-    public async listarProductos(): Promise<ProductData[]> {}
+
+    public async listarProductos(): Promise<ProductData[]> {
+        try {
+            const result = await Conexion.execute(`SELECT * FROM Producto`);
+            if (!result || !result.rows) {
+                console.warn("La consulta no regreso resultados");
+                return [];
+            }
+
+            return result.rows as ProductData[];
+        } catch (error) {
+            console.log("Error al seleccionar productos", error);
+            throw new Error("No se pudieron obtener datos y/o productos");
+        }
+    }
 
     public async crearProducto(): Promise<{success:boolean, message:string, product?:Record<string, unknown>}> {}
 

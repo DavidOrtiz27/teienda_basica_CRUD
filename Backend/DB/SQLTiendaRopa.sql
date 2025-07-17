@@ -4,7 +4,7 @@ CREATE SCHEMA tienda_ropa;
 USE tienda_ropa;
 
 CREATE TABLE Producto (
-    id_producto INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_producto INT PRIMARY KEY AUTO_INCREMENT,
     imagen_url VARCHAR(255) NOT NULL,
     medida VARCHAR(50),
     color VARCHAR(30),
