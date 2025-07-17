@@ -1,72 +1,73 @@
-import { Context, RouterContext} from "../Dependencies/Dependendcies.ts";
+import { Context, RouterContext } from "../Dependencies/Dependendcies.ts";
 import { ProductsModel } from "../Model/ProductsModel.ts";
 import { guardarImagen, actualizarImagen, actualizarImagenConCambioCarpeta } from "./ImagenCOntroller.ts";
 import { CreateFolderController, eliminarCarpeta } from "./FolderController.ts";
 import { z } from "../Dependencies/Dependendcies.ts";
+import { XLSX } from "../Dependencies/Dependendcies.ts";
 
 const ProductSchema = z.object({
-    id_producto: z.coerce.number().min(1).optional(),
-    imagen_url: z.string().max(255).optional(),
-    medida: z.string().min(1),
-    color: z.string().min(1),
-    talla: z.string().min(1),
-    categoria: z.string().min(1),
-    precio: z.coerce.number().positive(),
-    stock: z.coerce.number().int().nonnegative(),
+  id_producto: z.coerce.number().min(1).optional(),
+  imagen_url: z.string().max(255).optional(),
+  medida: z.string().min(1),
+  color: z.string().min(1),
+  talla: z.string().min(1),
+  categoria: z.string().min(1),
+  precio: z.coerce.number().positive(),
+  stock: z.coerce.number().int().nonnegative(),
 });
 
 export const getProducts = async (ctx: Context) => {
 
-    const { response } = ctx;
+  const { response } = ctx;
 
-    try {
-        const objProductos = new ProductsModel();
-        const listaProductos = await objProductos.listarProductos(); 
+  try {
+    const objProductos = new ProductsModel();
+    const listaProductos = await objProductos.listarProductos();
 
-        if (!listaProductos || listaProductos.length === 0) {
-            response.status = 400;
-            response.body = {
-                success: false,
-                message: "no se encontraron productos en la base de datos",
-            };
-            return;
-        }
-
-        // Agregar nombreCarpeta extraído de imagen_url
-        const productosConCarpeta = listaProductos.map(producto => {
-            let nombreCarpeta = "";
-            if (producto.imagen_url && producto.imagen_url.startsWith("uploads/")) {
-                const partes = producto.imagen_url.split("/");
-                if (partes.length > 2) {
-                    nombreCarpeta = partes[1]; // uploads/nombreCarpeta/imagen.jpg
-                }
-            }
-            return { ...producto, nombreCarpeta };
-        });
-
-        response.status = 200;
-        response.body = {
-            success: true,
-            data: productosConCarpeta,
-        };
-    } catch (error) {
-
-        if (error instanceof Error) {
-            response.status = 500;
-            response.body = {
-                success: false,
-                message: "Error interno del servidor",
-                error: error.message,
-            };
-        } else {
-            response.status = 500;
-            response.body = {
-                success: false,
-                message: "Error interno del servidor",
-                error: String(error),
-            };
-        }
+    if (!listaProductos || listaProductos.length === 0) {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "no se encontraron productos en la base de datos",
+      };
+      return;
     }
+
+    // Agregar nombreCarpeta extraído de imagen_url
+    const productosConCarpeta = listaProductos.map(producto => {
+      let nombreCarpeta = "";
+      if (producto.imagen_url && producto.imagen_url.startsWith("uploads/")) {
+        const partes = producto.imagen_url.split("/");
+        if (partes.length > 2) {
+          nombreCarpeta = partes[1]; // uploads/nombreCarpeta/imagen.jpg
+        }
+      }
+      return { ...producto, nombreCarpeta };
+    });
+
+    response.status = 200;
+    response.body = {
+      success: true,
+      data: productosConCarpeta,
+    };
+  } catch (error) {
+
+    if (error instanceof Error) {
+      response.status = 500;
+      response.body = {
+        success: false,
+        message: "Error interno del servidor",
+        error: error.message,
+      };
+    } else {
+      response.status = 500;
+      response.body = {
+        success: false,
+        message: "Error interno del servidor",
+        error: String(error),
+      };
+    }
+  }
 
 }
 // POST - Crear nuevo producto con imagen
@@ -131,9 +132,9 @@ export const createProduct = async (ctx: Context) => {
         imagen_url = resultado.ruta;
       } else {
         response.status = 500;
-        response.body = { 
-          success: false, 
-          message: "Error al guardar la imagen: " + (resultado.message || "Error desconocido") 
+        response.body = {
+          success: false,
+          message: "Error al guardar la imagen: " + (resultado.message || "Error desconocido")
         };
         return;
       }
@@ -273,35 +274,35 @@ export const updateProduct = async (ctx: Context) => {
     if (cambioCarpeta && hayNuevaImagen && imagenFile) {
       // Caso especial: cambio de carpeta y nueva imagen
       const resultadoImagen = await actualizarImagenConCambioCarpeta(
-        imagenFile, 
-        categoria, 
+        imagenFile,
+        categoria,
         productoExistente.categoria
       );
       if (resultadoImagen.success) {
         imagen_url = resultadoImagen.ruta || productoExistente.imagen_url;
       } else {
         response.status = 500;
-        response.body = { 
-          success: false, 
-          message: resultadoImagen.message 
+        response.body = {
+          success: false,
+          message: resultadoImagen.message
         };
         return;
       }
     } else {
       // Caso normal: solo cambio de carpeta O solo nueva imagen
       const resultadoImagen = await actualizarImagen(
-        imagenFile, 
-        categoria, 
-        productoExistente.categoria, 
+        imagenFile,
+        categoria,
+        productoExistente.categoria,
         productoExistente.imagen_url
       );
       if (resultadoImagen.success) {
         imagen_url = resultadoImagen.ruta || productoExistente.imagen_url;
       } else {
         response.status = 500;
-        response.body = { 
-          success: false, 
-          message: resultadoImagen.message 
+        response.body = {
+          success: false,
+          message: resultadoImagen.message
         };
         return;
       }
@@ -377,7 +378,7 @@ export const deleteProduct = async (ctx: RouterContext<"/products/:id">) => {
       try {
         const body = await request.body({ type: "json" }).value;
         nombreCarpeta = body.nombreCarpeta || "";
-      } catch (_) {}
+      } catch (_) { }
     }
 
     if (!nombreCarpeta) {
@@ -429,3 +430,43 @@ export const deleteProduct = async (ctx: RouterContext<"/products/:id">) => {
     }
   }
 };
+
+export const postUploadFromXLSX = async (ctx: Context) => {
+  const { response, request } = ctx;
+
+  try {
+    const contentLength = request.headers.get("Content-Length");
+    if (contentLength === "0") {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "El cuerpo de la solicitud está vacío"
+      };
+      return;
+    }
+
+    const formData = await request.body.formData();
+
+    const xlsxFile = formData.get("File") as File;
+    
+    console.log("File Name:", xlsxFile.name);
+    console.log("File Type:", xlsxFile.type);
+    console.log("File Size:", xlsxFile.size);
+
+    const arrayBuffer = await xlsxFile.arrayBuffer();
+    const data = new Uint8Array(arrayBuffer);
+
+    const workbook = XLSX.read(data, { type: "array" });
+
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+
+    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+    console.log(jsonData)
+
+
+  } catch (error) {
+
+  }
+}
