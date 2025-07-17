@@ -319,7 +319,7 @@ export const updateProduct = async (ctx: Context) => {
     const cambioCarpeta = productoExistente.categoria !== categoria || productoExistente.talla !== talla;
     const hayNuevaImagen = imagenFile !== null;
 
-    
+
     // Determinar el nombre de la carpeta a usar para la imagen
     let nombreCarpetaFinal = categoria;
     if (hayNuevaImagen) {
@@ -352,8 +352,8 @@ export const updateProduct = async (ctx: Context) => {
     if (cambioCarpeta && hayNuevaImagen && imagenFile) {
       // Caso especial: cambio de carpeta y nueva imagen
       const resultadoImagen = await actualizarImagenConCambioCarpeta(
-        imagenFile, 
-        nombreCarpetaFinal, 
+        imagenFile,
+        nombreCarpetaFinal,
         productoExistente.categoria
       );
       if (resultadoImagen.success) {
@@ -369,9 +369,9 @@ export const updateProduct = async (ctx: Context) => {
     } else {
       // Caso normal: solo cambio de carpeta O solo nueva imagen
       const resultadoImagen = await actualizarImagen(
-        imagenFile, 
-        nombreCarpetaFinal, 
-        productoExistente.categoria, 
+        imagenFile,
+        nombreCarpetaFinal,
+        productoExistente.categoria,
         productoExistente.imagen_url
       );
       if (resultadoImagen.success) {
@@ -541,9 +541,8 @@ export const postUploadFromXLSX = async (ctx: Context) => {
 
     const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-    const arrayResponse:boolean[] = [];
 
-    for (const row of jsonData){
+    for (const row of jsonData) {
       const validated = ProductSchema.parse(row);
       const productData = {
         ...validated,
@@ -553,13 +552,39 @@ export const postUploadFromXLSX = async (ctx: Context) => {
       const objProducto = new ProductsModel(productData)
       const result = await objProducto.crearProducto();
 
-      arrayResponse.push(result.success)
+      console.log(result)
+
+      if (!result.success) {
+        response.status = 400
+        response.body = {
+          success: false,
+          message: "Error al agregar entrada " + jsonData.indexOf(row)
+        }
+
+      }
     }
 
-    console.log(arrayResponse);
+    response.status = 200
+    response.body = {
+      success: true,
+      message: "Productos agregados correctamente"
+    }
 
 
   } catch (error) {
-
+    if (error instanceof z.ZodError) {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "Datos invalidos",
+        errors: error.format(),
+      }
+    } else {
+      response.status = 500;
+      response.body = {
+        success: false,
+        message: "Error interno de servidor",
+      }
+    }
   }
 }

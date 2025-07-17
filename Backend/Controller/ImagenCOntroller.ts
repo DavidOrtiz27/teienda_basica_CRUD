@@ -36,11 +36,18 @@ export async function guardarImagen(
     await Deno.writeFile(rutaAbsoluta, bytes);
     return { success: true, ruta: rutaRelativa };
   } catch (error) {
-    console.error("Error al guardar imagen:", error);
-    return {
-      success: false,
-      message: `Error al guardar imagen: ${error.message}`
-    };
+    if (error instanceof Error) {
+      console.error("Error al guardar imagen:", error);
+      return {
+        success: false,
+        message: `Error al guardar imagen: ${error.message}`
+      };
+    }else {
+      return {
+        success: false,
+        message: `Error interno del servidor`
+      };
+    }
   }
 }
 
@@ -75,13 +82,13 @@ export async function eliminarImagenAnterior(
 
     // Eliminar el archivo
     await Deno.remove(rutaAbsoluta);
-    
+
     return { success: true, message: "Imagen anterior eliminada exitosamente" };
   } catch (error) {
     console.error("Error al eliminar imagen anterior:", error);
-    return { 
-      success: false, 
-      message: `Error al eliminar imagen anterior: ${error.message}` 
+    return {
+      success: false,
+      message: `Error al eliminar imagen anterior: ${error.message}`
     };
   }
 }
@@ -128,15 +135,15 @@ export async function eliminarTodasImagenesCarpeta(
       }
     }
 
-    return { 
-      success: true, 
-      message: `Se eliminaron ${archivos.length} archivos de la carpeta ${nombreCarpeta}` 
+    return {
+      success: true,
+      message: `Se eliminaron ${archivos.length} archivos de la carpeta ${nombreCarpeta}`
     };
   } catch (error) {
     console.error("Error al eliminar imágenes de la carpeta:", error);
-    return { 
-      success: false, 
-      message: `Error al eliminar imágenes de la carpeta: ${error.message}` 
+    return {
+      success: false,
+      message: `Error al eliminar imágenes de la carpeta: ${error.message}`
     };
   }
 }
@@ -164,22 +171,22 @@ export async function actualizarImagenConCambioCarpeta(
     // 2. Guardar la nueva imagen en la nueva carpeta
     const resultado = await guardarImagen(imagenFile, nombreCarpeta);
     if (resultado.success && resultado.ruta) {
-      return { 
-        success: true, 
+      return {
+        success: true,
         ruta: resultado.ruta,
-        message: "Imagen actualizada exitosamente con cambio de carpeta" 
+        message: "Imagen actualizada exitosamente con cambio de carpeta"
       };
     } else {
-      return { 
-        success: false, 
-        message: "Error al guardar la nueva imagen: " + (resultado.message || "Error desconocido") 
+      return {
+        success: false,
+        message: "Error al guardar la nueva imagen: " + (resultado.message || "Error desconocido")
       };
     }
   } catch (error) {
     console.error("Error al actualizar imagen con cambio de carpeta:", error);
-    return { 
-      success: false, 
-      message: `Error al actualizar imagen con cambio de carpeta: ${error.message}` 
+    return {
+      success: false,
+      message: `Error al actualizar imagen con cambio de carpeta: ${error.message}`
     };
   }
 }
@@ -194,18 +201,18 @@ export async function actualizarImagenConCambioCarpeta(
  * @returns Resultado de la operación con ruta de la imagen final
  */
 export async function actualizarImagen(
-  imagenFile: File | null, 
-  nombreCarpeta: string, 
-  nombreCarpetaAnterior: string, 
+  imagenFile: File | null,
+  nombreCarpeta: string,
+  _nombreCarpetaAnterior: string,
   imagenAnterior: string
 ): Promise<{ success: boolean; ruta?: string; message?: string }> {
   try {
     // Si no se envía nueva imagen, mantener la anterior
     if (!imagenFile) {
-      return { 
-        success: true, 
+      return {
+        success: true,
         ruta: imagenAnterior,
-        message: "Se mantiene la imagen anterior" 
+        message: "Se mantiene la imagen anterior"
       };
     }
 
@@ -220,22 +227,22 @@ export async function actualizarImagen(
     // Guardar nueva imagen
     const resultado = await guardarImagen(imagenFile, nombreCarpeta);
     if (resultado.success && resultado.ruta) {
-      return { 
-        success: true, 
+      return {
+        success: true,
         ruta: resultado.ruta,
-        message: "Imagen actualizada exitosamente" 
+        message: "Imagen actualizada exitosamente"
       };
     } else {
-      return { 
-        success: false, 
-        message: "Error al guardar la nueva imagen: " + (resultado.message || "Error desconocido") 
+      return {
+        success: false,
+        message: "Error al guardar la nueva imagen: " + (resultado.message || "Error desconocido")
       };
     }
   } catch (error) {
     console.error("Error al actualizar imagen:", error);
-    return { 
-      success: false, 
-      message: `Error al actualizar imagen: ${error.message}` 
+    return {
+      success: false,
+      message: `Error al actualizar imagen: ${error.message}`
     };
   }
 }
