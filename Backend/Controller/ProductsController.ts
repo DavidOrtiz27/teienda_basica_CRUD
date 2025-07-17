@@ -5,6 +5,9 @@ import { CreateFolderController, eliminarCarpeta } from "./FolderController.ts";
 import { z } from "../Dependencies/Dependendcies.ts";
 import { XLSX } from "../Dependencies/Dependendcies.ts";
 
+// Agregar esta línea al inicio del archivo para asegurar el acceso a Deno
+// @ts-ignore
+// deno-lint-ignore-file
 const ProductSchema = z.object({
   id_producto: z.coerce.number().min(1).optional(),
   imagen_url: z.string().max(255).optional(),
@@ -70,6 +73,51 @@ export const getProducts = async (ctx: Context) => {
   }
 
 }
+
+export const getProductByID = async (ctx: RouterContext<"/products/:id">) => {
+  const { response, params } = ctx;
+  try {
+    const id = params?.id ? Number(params.id) : null;
+    if (!id || isNaN(id)) {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "ID inválido"
+      };
+      return;
+    }
+    const objProductos = new ProductsModel();
+    const producto = await objProductos.listarProductoByID(id);
+    if (!producto) {
+      response.status = 404;
+      response.body = {
+        success: false,
+        message: "Producto no encontrado"
+      };
+      return;
+    }
+    let nombreCarpeta = "";
+    if (producto.imagen_url && producto.imagen_url.startsWith("uploads/")) {
+      const partes = producto.imagen_url.split("/");
+      if (partes.length > 2) {
+        nombreCarpeta = partes[1];
+      }
+    }
+    response.status = 200;
+    response.body = {
+      success: true,
+      data: { ...producto, nombreCarpeta }
+    };
+  } catch (error) {
+    response.status = 500;
+    response.body = {
+      success: false,
+      message: "Error interno del servidor",
+      error: error instanceof Error ? error.message : String(error)
+    };
+  }
+}
+
 // POST - Crear nuevo producto con imagen
 export const createProduct = async (ctx: Context) => {
   const { response, request } = ctx;
@@ -271,11 +319,41 @@ export const updateProduct = async (ctx: Context) => {
     const cambioCarpeta = productoExistente.categoria !== categoria || productoExistente.talla !== talla;
     const hayNuevaImagen = imagenFile !== null;
 
+    
+    // Determinar el nombre de la carpeta a usar para la imagen
+    let nombreCarpetaFinal = categoria;
+    if (hayNuevaImagen) {
+      // Verificar si la carpeta existe
+      const urlActual = new URL(import.meta.url);
+      const raizProyecto = new URL("../", urlActual).pathname;
+      // @ts-ignore
+      const rutaCarpeta = `${raizProyecto}uploads/${categoria}`;
+      let carpetaExiste = true;
+      try {
+        // @ts-ignore
+        await Deno.stat(rutaCarpeta);
+      } catch (error) {
+        if (error instanceof Deno.errors.NotFound) {
+          carpetaExiste = false;
+        } else {
+          throw error;
+        }
+      }
+      if (!carpetaExiste) {
+        // Generar carpeta única con UUID
+        const folderResult = await CreateFolderController(categoria, talla);
+        if (folderResult.success && folderResult.nombreCarpeta) {
+          nombreCarpetaFinal = folderResult.nombreCarpeta;
+        }
+      }
+    }
+    // --- FIN MODIFICACIÓN ---
+
     if (cambioCarpeta && hayNuevaImagen && imagenFile) {
       // Caso especial: cambio de carpeta y nueva imagen
       const resultadoImagen = await actualizarImagenConCambioCarpeta(
-        imagenFile,
-        categoria,
+        imagenFile, 
+        nombreCarpetaFinal, 
         productoExistente.categoria
       );
       if (resultadoImagen.success) {
@@ -291,9 +369,9 @@ export const updateProduct = async (ctx: Context) => {
     } else {
       // Caso normal: solo cambio de carpeta O solo nueva imagen
       const resultadoImagen = await actualizarImagen(
-        imagenFile,
-        categoria,
-        productoExistente.categoria,
+        imagenFile, 
+        nombreCarpetaFinal, 
+        productoExistente.categoria, 
         productoExistente.imagen_url
       );
       if (resultadoImagen.success) {

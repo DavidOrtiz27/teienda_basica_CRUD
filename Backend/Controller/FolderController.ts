@@ -87,7 +87,9 @@ export async function RenombrarCarpetaController(nombreCarpetaAnterior: string, 
         console.error("Error al renombrar carpeta:", error);
         return {
             success: false,
-            message: `Error al renombrar carpeta: ${error.message}`
+            message: `Error al renombrar carpeta: ${
+                error instanceof Error ? error.message : String(error)
+            }`
         };
     }
 }
@@ -113,7 +115,9 @@ export async function eliminarCarpeta(nombreCarpeta: string): Promise<{ success:
     } catch (error) {
         return { 
             success: false, 
-            message: `Error al intentar eliminar la carpeta: ${error.message}` 
+            message: `Error al intentar eliminar la carpeta: ${
+                error instanceof Error ? error.message : String(error)
+            }` 
         };
     }
 }

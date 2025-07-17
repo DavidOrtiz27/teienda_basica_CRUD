@@ -35,6 +35,22 @@ export class ProductsModel {
         }
     }
 
+    public async listarProductoByID(id_producto:number):Promise <ProductData | null>{
+        try {
+            const query = "SELECT * FROM Producto WHERE id_producto = ?";
+            const result = await Conexion.execute(query, [id_producto]);
+
+            if (!result || !result.rows || result.rows.length === 0) {
+                return null;
+            }
+
+            return result.rows[0] as ProductData;
+        } catch (error) {
+            console.error("Error al buscar producto por ID:", error);
+            throw new Error("Error al obtener producto por ID de la base de datos");
+        }
+    }
+
     // Crear nuevo producto
     public async crearProducto(): Promise<{ success: boolean; message: string; product?: Record<string, unknown> }> {
         try {
@@ -76,6 +92,8 @@ export class ProductsModel {
             };
         }
     }
+
+
 
     // Actualizar producto existente
     public async actualizarProducto(): Promise<{ success: boolean; message: string; product?: Record<string, unknown> }> {
