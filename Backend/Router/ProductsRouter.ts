@@ -8,5 +8,4 @@ ProductsRouter.post("/products", createProduct);
 ProductsRouter.put("/products", updateProduct);
 ProductsRouter.delete("/products/:id", deleteProduct);
 ProductsRouter.post("/upload", postUploadFromXLSX);
-
 export { ProductsRouter };
