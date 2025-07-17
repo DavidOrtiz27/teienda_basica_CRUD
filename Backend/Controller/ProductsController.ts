@@ -448,7 +448,7 @@ export const postUploadFromXLSX = async (ctx: Context) => {
     const formData = await request.body.formData();
 
     const xlsxFile = formData.get("File") as File;
-    
+
     console.log("File Name:", xlsxFile.name);
     console.log("File Type:", xlsxFile.type);
     console.log("File Size:", xlsxFile.size);
@@ -463,7 +463,22 @@ export const postUploadFromXLSX = async (ctx: Context) => {
 
     const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-    console.log(jsonData)
+    const arrayResponse:boolean[] = [];
+
+    for (const row of jsonData){
+      const validated = ProductSchema.parse(row);
+      const productData = {
+        ...validated,
+        imagen_url: row.imagen_url,
+      };
+
+      const objProducto = new ProductsModel(productData)
+      const result = await objProducto.crearProducto();
+
+      arrayResponse.push(result.success)
+    }
+
+    console.log(arrayResponse);
 
 
   } catch (error) {
