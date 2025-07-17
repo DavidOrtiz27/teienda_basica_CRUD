@@ -1,10 +1,64 @@
+# =========================
+# ENDPOINTS PRODUCTOS CRUD
+# =========================
+
+# Obtener todos los productos
+# Ahora cada producto incluye el campo 'nombreCarpeta' extraído de la ruta de la imagen
 GET http://localhost:8000/products
 
+# Ejemplo de respuesta:
+# {
+#   "success": true,
+#   "data": [
+#     {
+#       "id_producto": 1,
+#       "imagen_url": "uploads/Camiseta_M_ef1588ef-67b7-42e7-9df6-cae606f04efc/imagen_saco.jpg",
+#       "medida": "M",
+#       "color": "Rojo",
+#       "talla": "M",
+#       "categoria": "Camiseta",
+#       "precio": 19.99,
+#       "stock": 50,
+#       "nombreCarpeta": "Camiseta_M_ef1588ef-67b7-42e7-9df6-cae606f04efc"
+#     },
+#     ...
+#   ]
+# }
+
 ###
+# Crear un nuevo producto (con imagen opcional)
+# Campos requeridos: medida, color, talla, categoria, precio, stock
+# Para imagen, usar campo 'imagen' como archivo
 POST http://localhost:8000/products
+Content-Type: multipart/form-data
+
+medida=M
+color=Rojo
+talla=M
+categoria=Camiseta
+precio=19.99
+stock=50
+# imagen=@/ruta/a/imagen.jpg
 
 ###
+# Actualizar un producto existente (con o sin imagen)
+# Campos requeridos: id_producto, medida, color, talla, categoria, precio, stock
+# Para imagen, usar campo 'imagen' como archivo
 PUT http://localhost:8000/products
+Content-Type: multipart/form-data
+
+id_producto=1
+medida=L
+color=Azul
+talla=S
+categoria=Sudadera
+precio=29.99
+stock=20
+# imagen=@/ruta/a/imagen_nueva.jpg
 
 ###
-DELETE http://localhost:8000/products/:id
+# Eliminar un producto y su carpeta de imágenes
+# Requiere el id del producto y el nombreCarpeta generado al crearlo (lo obtienes del GET o del POST)
+DELETE http://localhost:8000/products/1?nombreCarpeta=Sudadera_S_123e4567-e89b-12d3-a456-426614174000
+
+###
