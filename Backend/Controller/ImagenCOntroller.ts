@@ -1,4 +1,3 @@
-import { CreateFolderController, RenombrarCarpetaController } from "./FolderController.ts";
 
 // ============================================================================
 // FUNCIONES PRINCIPALES PARA MANEJO DE IMÁGENES

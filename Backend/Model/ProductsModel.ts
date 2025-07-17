@@ -117,7 +117,7 @@ export class ProductsModel {
                 imagen_url, medida, color, talla, categoria, precio, stock, id_producto
             ]);
 
-            if (result && result.affectedRows > 0) {
+            if (result && typeof result.affectedRows === "number" && result.affectedRows > 0) {
                 return {
                     success: true,
                     message: "Producto actualizado exitosamente",
@@ -156,7 +156,7 @@ export class ProductsModel {
             const deleteQuery = "DELETE FROM Producto WHERE id_producto = ?";
             const result = await Conexion.execute(deleteQuery, [id_producto]);
 
-            if (result && result.affectedRows > 0) {
+            if (result && typeof result.affectedRows === "number" && result.affectedRows > 0) {
                 return {
                     success: true,
                     message: "Producto eliminado exitosamente"
