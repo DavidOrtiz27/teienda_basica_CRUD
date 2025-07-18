@@ -9,7 +9,7 @@ import { XLSX } from "../Dependencies/Dependendcies.ts";
 // @ts-ignore
 // deno-lint-ignore-file
 const ProductSchema = z.object({
-  id_producto: z.coerce.number().min(1).optional(),
+  // id_producto: z.coerce.number().min(1).optional(),
   imagen_url: z.string().max(255).optional(),
   medida: z.string().min(1),
   color: z.string().min(1),
@@ -264,6 +264,7 @@ export const updateProduct = async (ctx: Context) => {
           if (key === "categoria") categoria = value;
           if (key === "talla") talla = value;
           if (key === "localdate") localdate = value;
+          // if (key === "id_producto") id_Producto = value;
         }
       } else {
         if (value && value.name && value.name.trim() !== "") {
@@ -369,9 +370,9 @@ export const updateProduct = async (ctx: Context) => {
     } else {
       // Caso normal: solo cambio de carpeta O solo nueva imagen
       const resultadoImagen = await actualizarImagen(
-        imagenFile,
-        nombreCarpetaFinal,
-        productoExistente.categoria,
+        imagenFile, 
+        nombreCarpetaFinal, 
+        productoExistente.categoria, 
         productoExistente.imagen_url
       );
       if (resultadoImagen.success) {
@@ -390,7 +391,7 @@ export const updateProduct = async (ctx: Context) => {
     const productoActualizado = {
       ...validated,
       imagen_url,
-      id_producto: Number(idProducto),
+      id_producto: data.id_producto,
       categoria,
       talla
       // localdate NO se guarda en el modelo ni en la base de datos
